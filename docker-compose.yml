@@ -1,35 +1,73 @@
----
 services:
   umami:
-    image: ghcr.io/umami-software/umami:latest
-    ports:
-      - "3000:3000"
-    environment:
-      DATABASE_URL: postgresql://umami:umami@db:5432/umami
-      APP_SECRET: replace-me-with-a-random-string
-    depends_on:
-      db:
-        condition: service_healthy
-    init: true
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        DATABASE_TYPE: postgresql
+        ALLOWED_FRAME_URLS: ${ALLOWED_FRAME_URLS:-}
     restart: always
+    container_name: ${COMPOSE_PROJECT_NAME}_ui
+    networks:
+      - internal
+      - dokploy-network
     healthcheck:
       test: ["CMD-SHELL", "curl http://localhost:3000/api/heartbeat"]
       interval: 5s
       timeout: 5s
       retries: 5
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      DATABASE_TYPE: postgresql
+      APP_SECRET: ${APP_SECRET}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
+
+      # # Middleware для iframe - удаляем X-Frame-Options и меняем CSP
+      # - "traefik.http.middlewares.umami-iframe.headers.customResponseHeaders.X-Frame-Options="
+      # - "traefik.http.middlewares.umami-iframe.headers.customResponseHeaders.Content-Security-Policy=default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data: blob:; font-src * data:; connect-src *; frame-ancestors 'self' http://localhost:* https://localhost:* http://dev.ispark.kz https://dev.ispark.kz https://*.ispark.kz;"
+
+      # HTTP router (редирект HTTP -> HTTPS)
+      - "traefik.http.routers.umami-http.rule=Host(`${HOSTNAME}`)"
+      - "traefik.http.routers.umami-http.entrypoints=web"
+      - "traefik.http.routers.umami-http.middlewares=https-redirect"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+
+      # HTTPS router с middleware для iframe
+      - "traefik.http.routers.umami-https.rule=Host(`${HOSTNAME}`)"
+      - "traefik.http.routers.umami-https.entrypoints=websecure"
+      - "traefik.http.routers.umami-https.middlewares=umami-iframe"
+      - "traefik.http.routers.umami-https.tls=true"
+      - "traefik.http.routers.umami-https.tls.certresolver=letsencrypt"
+      - "traefik.http.services.umami.loadbalancer.server.port=3000"
+
   db:
     image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: umami
-      POSTGRES_USER: umami
-      POSTGRES_PASSWORD: umami
-    volumes:
-      - umami-db-data:/var/lib/postgresql/data
     restart: always
+    container_name: ${COMPOSE_PROJECT_NAME}_db
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - internal
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+networks:
+  internal:
+    driver: bridge
+  dokploy-network:
+    external: true
+
 volumes:
-  umami-db-data:
+  db-data:
