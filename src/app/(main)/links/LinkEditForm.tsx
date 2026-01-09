@@ -115,7 +115,7 @@ export function LinkEditForm({
               <Label>{formatMessage(labels.link)}</Label>
               <Row alignItems="center" gap>
                 <TextField
-                  value={`${hostUrl}/${slug}`}
+                  value={`${hostUrl}/analytics/${slug}`}
                   autoComplete="off"
                   isReadOnly
                   allowCopy
