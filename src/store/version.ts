@@ -15,6 +15,11 @@ const initialState = {
 const store = create(() => ({ ...initialState }));
 
 export async function checkVersion() {
+  // Отключаем проверку при DISABLE_UPDATES или при интеграции Dokploy (DOKPLOY_ENABLED не 'false')
+  if (process.env.DISABLE_UPDATES === 'true' || process.env.DOKPLOY_ENABLED !== 'false') {
+    return;
+  }
+
   const { current } = store.getState();
 
   const data = await fetch(`${UPDATES_URL}?v=${current}`, {

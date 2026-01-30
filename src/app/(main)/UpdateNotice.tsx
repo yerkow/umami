@@ -19,6 +19,7 @@ export function UpdateNotice({ user, config }) {
     !config?.privateMode &&
     !pathname.includes('/share/') &&
     !process.env.cloudMode &&
+    process.env.DOKPLOY_ENABLED === 'false' &&
     !dismissed;
 
   const updateCheck = useCallback(() => {

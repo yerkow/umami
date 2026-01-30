@@ -51,9 +51,12 @@ export function App({ children }) {
         {children}
       </Column>
       <UpdateNotice user={user} config={config} />
-      {process.env.NODE_ENV === 'production' && !pathname.includes('/share/') && (
-        <Script src={`${process.env.basePath || ''}/telemetry.js`} />
-      )}
+      {process.env.NODE_ENV === 'production' &&
+        !pathname.includes('/share/') &&
+        process.env.DISABLE_TELEMETRY !== 'true' &&
+        process.env.DOKPLOY_ENABLED === 'false' && (
+          <Script src={`${process.env.basePath || ''}/telemetry.js`} />
+        )}
     </Grid>
   );
 }
