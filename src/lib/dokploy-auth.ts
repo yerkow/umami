@@ -6,7 +6,7 @@ import { getUser } from '@/queries/prisma/user';
 const log = debug('umami:dokploy-auth');
 
 const DOKPLOY_API_URL = process.env.DOKPLOY_API_URL || 'http://localhost:3000';
-const DOKPLOY_VALIDATE_SESSION_PATH = '/api/analytics/validate-session';
+const DOKPLOY_VALIDATE_SESSION_PATH = '/api/auth/validate-session';
 
 /**
  * Читает cookie Better Auth из запроса
