@@ -3,7 +3,7 @@ import pkg from './package.json' with { type: 'json' };
 
 const TRACKER_SCRIPT = '/script.js';
 
-const basePath = process.env.BASE_PATH || '';
+const basePath = process.env.BASE_PATH || '/analytics';
 const cloudMode = process.env.CLOUD_MODE || '';
 const cloudUrl = process.env.CLOUD_URL || '';
 const collectApiEndpoint = process.env.COLLECT_API_ENDPOINT || '';

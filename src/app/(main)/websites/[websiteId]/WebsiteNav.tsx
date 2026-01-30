@@ -1,8 +1,10 @@
-import { Column, Text } from '@umami/react-zen';
+import { Column, IconLabel, Text } from '@umami/react-zen';
+import { LinkButton } from '@/components/common/LinkButton';
 import { SideMenu } from '@/components/common/SideMenu';
 import { useMessages, useNavigation } from '@/components/hooks';
 import {
   AlignEndHorizontal,
+  ArrowLeft,
   ChartPie,
   Clock,
   Eye,
@@ -160,8 +162,13 @@ export function WebsiteNav({
     .flatMap(e => e.items)
     .find(({ path }) => path && pathname.endsWith(path.split('?')[0]))?.id;
 
+  const websitesUrl = renderUrl('/websites');
+
   return (
     <Column padding="3" position="sticky" top="0" gap>
+      <LinkButton href={websitesUrl} variant="quiet" size="sm">
+        <IconLabel icon={<ArrowLeft />} label={formatMessage(labels.back)} />
+      </LinkButton>
       <WebsiteSelect
         websiteId={websiteId}
         teamId={teamId}

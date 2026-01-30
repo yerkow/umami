@@ -1,6 +1,7 @@
 import { Column, Label, Row } from '@umami/react-zen';
 import { useConfig, useLoginQuery, useMessages } from '@/components/hooks';
 import { ROLES } from '@/lib/constants';
+import { isDokployUser } from '@/lib/dokploy-utils';
 import { PasswordChangeButton } from './PasswordChangeButton';
 
 export function ProfileSettings() {
@@ -13,6 +14,7 @@ export function ProfileSettings() {
   }
 
   const { username, role } = user;
+  const isDokploy = isDokployUser(user);
 
   const renderRole = (value: string) => {
     if (value === ROLES.user) {
@@ -34,11 +36,18 @@ export function ProfileSettings() {
         <Label>{formatMessage(labels.username)}</Label>
         {username}
       </Column>
+      {isDokploy && (
+        <Column>
+          <Label>Авторизация</Label>
+          Авторизован через Dokploy
+        </Column>
+      )}
       <Column>
         <Label>{formatMessage(labels.role)}</Label>
         {renderRole(role)}
       </Column>
-      {!cloudMode && (
+      {/* Скрываем изменение пароля для Dokploy пользователей */}
+      {!cloudMode && !isDokploy && (
         <Column>
           <Label>{formatMessage(labels.password)}</Label>
           <Row>

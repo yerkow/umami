@@ -13,11 +13,15 @@ import {
 import { Fragment } from 'react';
 import { useLoginQuery, useMessages, useNavigation } from '@/components/hooks';
 import { LockKeyhole, LogOut, UserCircle } from '@/components/icons';
+import { isDokployUser } from '@/lib/dokploy-utils';
 
 export function ProfileButton() {
   const { formatMessage, labels } = useMessages();
   const { user } = useLoginQuery();
   const { renderUrl } = useNavigation();
+
+  // Скрываем логаут для Dokploy пользователей (они авторизуются через Dokploy)
+  const isDokploy = isDokployUser(user);
 
   const items = [
     {
@@ -33,7 +37,8 @@ export function ProfileButton() {
         path: '/admin',
         icon: <LockKeyhole />,
       },
-    {
+    // Скрываем логаут для Dokploy пользователей
+    !isDokploy && {
       id: 'logout',
       label: formatMessage(labels.logout),
       path: '/logout',
@@ -52,6 +57,18 @@ export function ProfileButton() {
       <Popover placement="bottom end">
         <Menu autoFocus="last">
           <MenuSection title={user.username}>
+            {isDokploy && (
+              <>
+                <MenuSeparator />
+                <MenuItem id="dokploy-info" disabled>
+                  <Row alignItems="center" gap>
+                    <Text size="sm" muted>
+                      Авторизован через Dokploy
+                    </Text>
+                  </Row>
+                </MenuItem>
+              </>
+            )}
             <MenuSeparator />
             {items.map(({ id, path, label, icon, separator }) => {
               return (

@@ -40,6 +40,7 @@ export function PixelEditForm({
   );
   const { pixelsUrl } = useConfig();
   const hostUrl = pixelsUrl || PIXELS_URL;
+  const basePath = process.env.basePath || '/analytics';
   const { data, isLoading } = usePixelQuery(pixelId);
   const [slug, setSlug] = useState(generateId());
 
@@ -99,7 +100,7 @@ export function PixelEditForm({
               <Label>{formatMessage(labels.link)}</Label>
               <Row alignItems="center" gap>
                 <TextField
-                  value={`${hostUrl}/${slug}`}
+                  value={`${hostUrl}${basePath}/${slug}`}
                   autoComplete="off"
                   isReadOnly
                   allowCopy

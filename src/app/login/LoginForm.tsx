@@ -7,6 +7,7 @@ import {
   Heading,
   Icon,
   PasswordField,
+  Text,
   TextField,
 } from '@umami/react-zen';
 import { useRouter } from 'next/navigation';
@@ -30,12 +31,36 @@ export function LoginForm() {
     });
   };
 
+  // Показываем сообщение если Dokploy интеграция включена
+  const dokployEnabled = process.env.DOKPLOY_ENABLED !== 'false';
+  const dokployUrl = process.env.DOKPLOY_API_URL || 'http://localhost:3000';
+
   return (
     <Column justifyContent="center" alignItems="center" gap="6">
       <Icon size="lg">
         <Logo />
       </Icon>
       <Heading>umami</Heading>
+      {dokployEnabled && (
+        <Column
+          alignItems="center"
+          gap="2"
+          padding="4"
+          backgroundColor="warning"
+          borderRadius
+          maxWidth="400px"
+        >
+          <Text size="sm" weight="medium">
+            Авторизация через Dokploy
+          </Text>
+          <Text size="sm" muted>
+            Пожалуйста, войдите через{' '}
+            <a href={dokployUrl} style={{ textDecoration: 'underline' }}>
+              Dokploy
+            </a>
+          </Text>
+        </Column>
+      )}
       <Form onSubmit={handleSubmit} error={getErrorMessage(error)}>
         <FormField
           label={formatMessage(labels.username)}

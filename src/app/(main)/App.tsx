@@ -1,13 +1,14 @@
 'use client';
-import { Column, Grid, Loading, Row } from '@umami/react-zen';
+import { Column, Grid, Loading } from '@umami/react-zen';
 import Script from 'next/script';
 import { useEffect } from 'react';
-import { MobileNav } from '@/app/(main)/MobileNav';
-import { SideNav } from '@/app/(main)/SideNav';
 import { useConfig, useLoginQuery, useNavigation } from '@/components/hooks';
 import { LAST_TEAM_CONFIG } from '@/lib/constants';
 import { removeItem, setItem } from '@/lib/storage';
 import { UpdateNotice } from './UpdateNotice';
+
+const DOKPLOY_ENABLED = process.env.DOKPLOY_ENABLED !== 'false';
+const DOKPLOY_BASE_URL = process.env.DOKPLOY_API_URL || 'http://localhost:3000';
 
 export function App({ children }) {
   const { user, isLoading, error } = useLoginQuery();
@@ -27,6 +28,13 @@ export function App({ children }) {
   }
 
   if (error) {
+    // Если Dokploy интеграция включена, редиректим обратно в Dokploy
+    // вместо страницы логина Umami
+    if (DOKPLOY_ENABLED) {
+      window.location.href = DOKPLOY_BASE_URL;
+      return null;
+    }
+
     window.location.href = config.cloudMode
       ? `${process.env.cloudUrl}/login`
       : `${process.env.basePath || ''}/login`;
@@ -38,18 +46,7 @@ export function App({ children }) {
   }
 
   return (
-    <Grid
-      columns={{ xs: '1fr', lg: 'auto 1fr' }}
-      rows={{ xs: 'auto 1fr', lg: '1fr' }}
-      height={{ xs: 'auto', lg: '100vh' }}
-      width="100%"
-    >
-      <Row display={{ xs: 'flex', lg: 'none' }} alignItems="center" gap padding="3">
-        <MobileNav />
-      </Row>
-      <Column display={{ xs: 'none', lg: 'flex' }}>
-        <SideNav />
-      </Column>
+    <Grid columns="1fr" rows="1fr" height={{ xs: 'auto', lg: '100vh' }} width="100%">
       <Column alignItems="center" overflowY="auto" overflowX="hidden" position="relative">
         {children}
       </Column>

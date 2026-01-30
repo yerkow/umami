@@ -1,6 +1,7 @@
 import debug from 'debug';
 import { ROLE_PERMISSIONS, ROLES, SHARE_TOKEN_HEADER } from '@/lib/constants';
 import { secret } from '@/lib/crypto';
+import { checkDokployAuth } from '@/lib/dokploy-auth';
 import { getRandomChars } from '@/lib/generate';
 import { createSecureToken, parseSecureToken, parseToken } from '@/lib/jwt';
 import redis from '@/lib/redis';
@@ -16,6 +17,18 @@ export function getBearerToken(request: Request) {
 }
 
 export async function checkAuth(request: Request) {
+  // Сначала проверяем авторизацию через Dokploy (если включена интеграция)
+  if (process.env.DOKPLOY_ENABLED !== 'false') {
+    const dokployAuth = await checkDokployAuth(request);
+    if (dokployAuth) {
+      log('Dokploy auth successful:', dokployAuth.user?.id);
+      return dokployAuth;
+    }
+    // Если Dokploy auth не сработала, продолжаем с обычной проверкой
+    log('Dokploy auth failed, falling back to standard auth');
+  }
+
+  // Стандартная проверка авторизации Umami
   const token = getBearerToken(request);
   const payload = parseSecureToken(token, secret());
   const shareToken = await parseShareToken(request);

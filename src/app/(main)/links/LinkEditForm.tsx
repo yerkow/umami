@@ -41,6 +41,7 @@ export function LinkEditForm({
   );
   const { linksUrl } = useConfig();
   const hostUrl = linksUrl || LINKS_URL;
+  const basePath = process.env.basePath || '/analytics';
   const { data, isLoading } = useLinkQuery(linkId);
   const [slug, setSlug] = useState(generateId());
 
@@ -115,7 +116,7 @@ export function LinkEditForm({
               <Label>{formatMessage(labels.link)}</Label>
               <Row alignItems="center" gap>
                 <TextField
-                  value={`${hostUrl}/${slug}`}
+                  value={`${hostUrl}${basePath}/${slug}`}
                   autoComplete="off"
                   isReadOnly
                   allowCopy
